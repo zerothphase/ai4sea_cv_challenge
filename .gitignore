@@ -2,3 +2,4 @@ Data/
 .ipynb_checkpoints/
 .vscode/
 models/
+__pycache__/
