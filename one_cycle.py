@@ -1,3 +1,4 @@
+import numpy as np
 # Source: https://github.com/nachiket273/One_Cycle_Policy
 class OneCycle(object):
     """
@@ -27,38 +28,37 @@ class OneCycle(object):
                         rate below lower learning rate.
                         The default value is 10.
     """
-    def __init__(self, nb, max_lr, momentum_vals=(0.95, 0.85), prcnt= 10 , div=10):
+    def __init__(self, nb, max_lr, momentum_vals=(0.95, 0.85), step_frac= 0.4 , div=25):
         self.nb = nb
         self.div = div
-        self.step_len =  int(self.nb * (1- prcnt/100)/2)
+        self.step_len =  int(self.nb * step_frac)
         self.high_lr = max_lr
+        self.start_lr = max_lr / div
+        self.low_lr = max_lr / div / 1000
         self.low_mom = momentum_vals[1]
         self.high_mom = momentum_vals[0]
-        self.prcnt = prcnt
+        self.step_frac = step_frac
         self.iteration = 0
         self.lrs = []
         self.moms = []
+        self.cos_space = np.linspace(0, np.pi, num=self.nb - self.step_len)
         
     def calc(self):
         self.iteration += 1
         lr = self.calc_lr()
         mom = self.calc_mom()
+        if self.iteration==self.nb:
+            self.iteration = 0
         return (lr, mom)
         
     def calc_lr(self):
-        if self.iteration==self.nb:
-            self.iteration = 0
-            self.lrs.append(self.high_lr/self.div)
-            return self.high_lr/self.div
-        if self.iteration > 2 * self.step_len:
-            ratio = (self.iteration - 2 * self.step_len) / (self.nb - 2 * self.step_len)
-            lr = self.high_lr * ( 1 - 0.99 * ratio)/self.div
-        elif self.iteration > self.step_len:
-            ratio = 1- (self.iteration -self.step_len)/self.step_len
-            lr = self.high_lr * (1 + ratio * (self.div - 1)) / self.div
+        
+        if self.iteration > self.step_len:
+            idx = self.iteration - self.step_len - 1
+            lr = self.low_lr + 0.5*(self.high_lr - self.low_lr)*(1 + np.cos(self.cos_space[idx]))
         else :
-            ratio = self.iteration/self.step_len
-            lr = self.high_lr * (1 + ratio * (self.div - 1)) / self.div
+            lr = self.start_lr + (self.high_lr - self.start_lr) / self.step_len * self.iteration
+
         self.lrs.append(lr)
         return lr
     
