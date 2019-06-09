@@ -9,8 +9,6 @@ import os
 
 WD_PATH = Path(".")
 DATA_PATH = WD_PATH / "Data"
-if not DATA_PATH.exists():
-    DATA_PATH.mkdir()
 CAR_TRAIN_URL = "http://imagenet.stanford.edu/internal/car196/cars_train.tgz"
 CAR_TEST_URL = "http://imagenet.stanford.edu/internal/car196/cars_test.tgz"
 DEVKIT_URL = "https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz"
@@ -19,6 +17,8 @@ TEST_ANNOS_WITHLABELS_URL = "http://imagenet.stanford.edu/internal/car196/cars_t
 
 def download(url:str, dest_dir:Path) -> Path:
     assert isinstance(dest_dir, Path), "dest_dir must be a Path object"
+    if not DATA_PATH.exists():
+        DATA_PATH.mkdir()
     filename = url.split('/')[-1]
     file_path = dest_dir / filename
     if not file_path.exists():
