@@ -6,6 +6,11 @@ import numpy as np
 import scipy.io
 import pandas as pd
 import os
+from fastai.vision import ImageList, crop_pad, imagenet_stats
+from sklearn.model_selection import train_test_split
+from efficientnet_pytorch import EfficientNet
+import torch
+from torch import nn
 
 WD_PATH = Path(".")
 DATA_PATH = WD_PATH / "Data"
@@ -87,3 +92,66 @@ def get_train_val_idx(num_examples, val_percent=0.2):
     random_idx = np.random.permutation(num_examples)
     train_idx, val_idx = random_idx[:num_train], random_idx[num_train:]
     return train_idx, val_idx
+
+def get_car_data(dataset="train", tfms=None, bs=32, sz=224, 
+                 padding_mode='reflection', stratify=True, seed=None, split_pct=0.2):
+    
+    assert dataset in ["train", "test"], "`dataset` must be `train` or `test`"
+    train_path, test_path = get_car_paths()
+    train_df = get_cars_df('cars_train_annos.mat')
+    test_df = get_cars_df('cars_test_annos_withlabels.mat')
+    
+    if stratify:
+        strat = train_df.iloc[:,1]
+    else:
+        strat = None
+    
+    if dataset == "train":
+        _, val_idx = train_test_split(range(len(train_df)), test_size=split_pct, 
+                                            random_state=seed, stratify=strat)
+        data = (ImageList.from_df(train_df, train_path, cols=0)
+                .split_by_idx(val_idx)
+                .label_from_df(cols=1)
+                .transform(tfms, size=sz, padding_mode=padding_mode)
+                .databunch(bs=bs).normalize(imagenet_stats)
+                )
+    elif dataset == "test":
+        data = (ImageList.from_df(test_df, test_path, cols=0)
+                .split_none()
+                .label_from_df(cols=1)
+                .transform(crop_pad(), size=sz, padding_mode=padding_mode)
+                .databunch(bs=bs).normalize(imagenet_stats)
+                )
+
+    return data
+
+def init_weights(m):
+    if type(m) == nn.Linear:
+        torch.nn.init.kaiming_normal_(m.weight)
+    elif type(m) == nn.BatchNorm1d:
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
+        
+def split_effnet(m):
+    blocks_length = len(m._blocks)
+    return ([m._conv_stem, m._bn0] + list(m._blocks.children())[:blocks_length//2], 
+            list(m._blocks.children())[blocks_length//2:] + [m._conv_head, m._bn1],
+            list(m.children())[5]
+            )
+
+def get_effnet(name="efficientnet-b0", pretrained=True, n_class=None, dropout_p=0.5):
+    
+    assert n_class != None, "Please specify the number of output classes `n_class`"
+    if pretrained == True:
+        print(f"Getting pretrained {name}")
+        m = EfficientNet.from_pretrained(name)
+    else:
+        print(f"Getting random initialized {name}")
+        m = EfficientNet.from_name(name)
+    
+    n_in = m._fc.in_features
+    m._fc = nn.Sequential(
+        nn.Dropout(p=dropout_p), 
+        nn.Linear(n_in, n_class))
+    m._fc.apply(init_weights)
+    return m
