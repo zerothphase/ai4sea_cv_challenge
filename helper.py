@@ -119,7 +119,7 @@ def get_car_data(dataset="train", tfms=None, bs=32, sz=224,
         data = (ImageList.from_df(test_df, test_path, cols=0)
                 .split_none()
                 .label_from_df(cols=1)
-                .transform(crop_pad(), size=sz, padding_mode=padding_mode)
+                .transform([crop_pad(), crop_pad()], size=sz, padding_mode=padding_mode)
                 .databunch(bs=bs).normalize(imagenet_stats)
                 )
 
