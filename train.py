@@ -16,10 +16,11 @@ from fastai.vision import accuracy
 pd.set_option('precision', 4)
 
 
-def train_effnet(name, epochs=60, lr=3e-3, wd=1e-3, export_learn=False):
+def train_effnet(name, epochs=None, lr=3e-3, wd=1e-3, export_learn=False):
     """Train EfficientNet with the best setting from experiments once"""
 
-    if isinstance(epochs, list): epochs = epochs[0]
+    if epochs == None: epochs=60
+    elif isinstance(epochs, list): epochs = epochs[0]
     # Get data and learner
     xtra_tfms = (zoom_crop(scale=(0.75,1.5), do_rand=True) 
                  + [cutout(n_holes=(1,4), length=(10, 40), p=0.7)])
@@ -78,12 +79,12 @@ def train_resnet(name, epochs=None, lr=3e-3, wd=1e-5, export_learn=False):
                         path='.').mixup(alpha=0.2)
     learn.to_fp16()
     
-    if isinstance(epochs, int):
-        epochs_p1, epochs_p2 = epochs, epochs
-    elif len(epochs) > 1:
-        epochs_p1, epochs_p2 = epochs[0], epochs[1]
-    else:
+    if epochs == None:
         epochs_p1, epochs_p2 = 20, 40
+    elif isinstance(epochs, int):
+        epochs_p1, epochs_p2 = epochs, epochs
+    elif isinstance(epochs, list) and len(epochs) > 1:
+        epochs_p1, epochs_p2 = epochs[0], epochs[1]
 
     # Train
     print("")
@@ -165,7 +166,7 @@ def parse_args():
                                  'resnet-50'],
                         help=m_help)
     parser.add_argument("-n", "--nruns", default=1, type=int, help=n_help)
-    parser.add_argument("-e", "--epochs", default=1, nargs='+', type=int,
+    parser.add_argument("-e", "--epochs", nargs='+', type=int,
                         help=e_help)
     args = parser.parse_args()
     n_runs = args.nruns
