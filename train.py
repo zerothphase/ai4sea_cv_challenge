@@ -46,7 +46,7 @@ def train_effnet(name, epochs=60, lr=3e-3, wd=1e-3, export_learn=False):
     val_acc = learn.recorder.metrics[-1][0]
     print(f"Validation accuracy: \t{val_acc:.05f}")
     if export_learn:
-        learn.export("exported_models/exported.pkl")
+        learn.export(f"exported_models/exported_{name}.pkl")
     
     # Evaluate test metrics
     learn.to_fp32()
@@ -105,7 +105,7 @@ def train_resnet(name, epochs=None, lr=3e-3, wd=1e-5, export_learn=False):
     val_acc = learn.recorder.metrics[-1][0]
     print(f"Validation accuracy: \t{val_acc:.05f}")
     if export_learn:
-        learn.export("exported_models/exported.pkl")
+        learn.export(f"exported_models/exported_{name}.pkl")
     
     # Evaluate test metrics
     learn.to_fp32()
@@ -148,22 +148,25 @@ def train_n_runs(n_runs, epochs, model_name="efficientnet-b0"):
     print("")
     print(f"Average metrics over {n_runs} runs")
     print(pd.DataFrame(df.mean(axis=0)).T)
+    print(f"The trained model of the last run is exported to "
+          f"'exported_models/exported_{model_name}.pkl'")
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Script to train EfficientNet and Resnet50 for Stanford Car \
-                    Dataset"
-        )
-    parser.add_argument("-n", "--nruns", default=1, type=int,
-                        help=f"Number of runs. Default = 1")
-    parser.add_argument("-e", "--epochs", default=1, nargs='+', type=int,
-                        help="Number of epochs. \nDefault for `efficientnet-bx` \
-                        = 60, `resnet-50` = 20 40.")
+    des = ("Script to train EfficientNet and Resnet50 for Stanford Car Dataset. "
+           "Trained model of the final run will be exported to the "
+           "`exported_models` folder")
+    m_help = "Choose the model to be trained. Default = 'efficientnet-b0'"
+    n_help = "Number of runs. Default = 1"
+    e_help = ("Number of epochs. Default for `efficientnet-bx`=60, "
+              "`resnet-50`=20 40.")
+    parser = argparse.ArgumentParser(description=des)
     parser.add_argument("-m", "--model", default='efficientnet-b0', 
                         choices=['efficientnet-b0', 'efficientnet-b3', 
                                  'resnet-50'],
-                        help="Choose the model to be trained. \
-                        Default = 'efficientnet-b0'")
+                        help=m_help)
+    parser.add_argument("-n", "--nruns", default=1, type=int, help=n_help)
+    parser.add_argument("-e", "--epochs", default=1, nargs='+', type=int,
+                        help=e_help)
     args = parser.parse_args()
     n_runs = args.nruns
     epochs = args.epochs
@@ -172,5 +175,5 @@ def parse_args():
 
 if __name__ == "__main__":
     n_runs, epochs, model = parse_args()
-    print(n_runs, epochs, model)
+    print(f"Your selected model is {model}, performing {n_runs} training runs...")
     train_n_runs(n_runs, epochs, model_name=model)
