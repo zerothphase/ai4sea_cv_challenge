@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from helper import get_car_data
 from helper import get_effnet
-import random
 import time
+import argparse
 from fastai.vision import Learner
 from fastai.vision import cnn_learner
 from fastai.vision import models
@@ -35,7 +35,7 @@ def train_effnet(name, epochs=60, lr=3e-3, wd=1e-3, export_learn=False):
     
     # Train
     print("")
-    print("Training...")
+    print(f"Training {name} for {epochs} epochs...")
     start = time.time()
     learn.fit_one_cycle(epochs, max_lr=lr, wd=wd, div_factor=25, final_div=1e4)
     train_time = time.time() - start
@@ -79,14 +79,14 @@ def train_resnet(name, epochs=None, lr=3e-3, wd=1e-5, export_learn=False):
     
     if isinstance(epochs, int):
         epochs_p1, epochs_p2 = epochs, epochs
-    elif isinstance(epochs, tuple) and len(epochs) > 1:
+    elif len(epochs) > 1:
         epochs_p1, epochs_p2 = epochs[0], epochs[1]
     else:
         epochs_p1, epochs_p2 = 20, 40
 
     # Train
     print("")
-    print("Training...")
+    print(f"Training {name} for {epochs_p1} + {epochs_p2} epochs...")
     start = time.time()
     # Phase 1, train head only
     print("Phase 1, training head...")
@@ -143,4 +143,27 @@ def train_n_runs(n_runs, epochs, model_name="efficientnet-b0"):
     print(f"Average metrics over {n_runs} runs")
     print(pd.DataFrame(df.mean(axis=0)).T)
 
-train_n_runs(1, 1, model_name="efficientnet-b0")
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Script to train EfficientNet and Resnet50 for Stanford Car \
+                    Dataset"
+        )
+    parser.add_argument("-n", "--nruns", default=1, type=int,
+                        help=f"Number of runs. Default = 1")
+    parser.add_argument("-e", "--epochs", default=1, nargs='+', type=int,
+                        help="Number of epochs. \nDefault for `efficientnet-bx` \
+                              = 60, `resnet-50` = 20 40.")
+    parser.add_argument("-m", "--model", default='efficientnet-b0', 
+                        choices=['efficientnet-b0', 'efficientnet-b3', 'resnet-50'],
+                        help="Choose the model to be trained. \
+                              Default = 'efficientnet-b0'")
+    args = parser.parse_args()
+    n_runs = args.nruns
+    epochs = args.epochs
+    model = args.model
+    return n_runs, epochs, model
+
+if __name__ == "__main__":
+    n_runs, epochs, model = parse_args()
+    print(n_runs, epochs, model)
+    train_n_runs(n_runs, epochs, model_name=model)
