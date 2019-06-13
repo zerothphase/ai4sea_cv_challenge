@@ -91,11 +91,13 @@ def train_resnet(name, epochs=None, lr=3e-3, wd=1e-5, export_learn=False):
     start = time.time()
     # Phase 1, train head only
     print("Phase 1, training head...")
-    learn.fit_one_cycle(epochs_p1, max_lr=1e-2, wd=1e-5, div_factor=25, pct_start=0.3)
+    learn.fit_one_cycle(epochs_p1, max_lr=1e-2, wd=1e-5, div_factor=25, 
+                        pct_start=0.3)
     # Phase 2, train whole model
     learn.unfreeze()
     print("Phase 2, unfreezed and training the whole model...")
-    learn.fit_one_cycle(epochs_p2, max_lr=slice(lr/10, lr), wd=wd, div_factor=25, pct_start=0.3)
+    learn.fit_one_cycle(epochs_p2, max_lr=slice(lr/10, lr), wd=wd, 
+                        div_factor=25, pct_start=0.3)
     train_time = time.time() - start
     print("Training completed!")
     print("")   
@@ -120,6 +122,8 @@ def train_resnet(name, epochs=None, lr=3e-3, wd=1e-5, export_learn=False):
     return stats
 
 def train_n_runs(n_runs, epochs, model_name="efficientnet-b0"):
+    """Run training of `model_name` for `n_runs` times"""
+
     stats_list = []
     export = False
     for i in range(n_runs):
@@ -129,9 +133,10 @@ def train_n_runs(n_runs, epochs, model_name="efficientnet-b0"):
         if i == n_runs-1: export=True
         if model_name in ["efficientnet-b0", "efficientnet-b3"]:
             stats_list.append(train_effnet(model_name, epochs=epochs, 
-                                        lr=3e-3, wd=1e-3, export_learn=export))
+                                           export_learn=export))
         elif model_name in ["resnet-50"]:
-            stats_list.append(train_resnet(model_name, epochs=epochs, export_learn=export))
+            stats_list.append(train_resnet(model_name, epochs=epochs, 
+                                           export_learn=export))
     
     # Print history and average of metrics
     df = pd.DataFrame(np.array(stats_list), 
@@ -153,11 +158,12 @@ def parse_args():
                         help=f"Number of runs. Default = 1")
     parser.add_argument("-e", "--epochs", default=1, nargs='+', type=int,
                         help="Number of epochs. \nDefault for `efficientnet-bx` \
-                              = 60, `resnet-50` = 20 40.")
+                        = 60, `resnet-50` = 20 40.")
     parser.add_argument("-m", "--model", default='efficientnet-b0', 
-                        choices=['efficientnet-b0', 'efficientnet-b3', 'resnet-50'],
+                        choices=['efficientnet-b0', 'efficientnet-b3', 
+                                 'resnet-50'],
                         help="Choose the model to be trained. \
-                              Default = 'efficientnet-b0'")
+                        Default = 'efficientnet-b0'")
     args = parser.parse_args()
     n_runs = args.nruns
     epochs = args.epochs
