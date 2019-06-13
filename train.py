@@ -19,7 +19,8 @@ pd.set_option('precision', 4)
 def train_effnet(name, epochs=60, lr=3e-3, wd=1e-3, export_learn=False):
     """Train EfficientNet with the best setting from experiments once"""
 
-    # Get ImageDataBunch and Learner
+    if isinstance(epochs, list): epochs = epochs[0]
+    # Get data and learner
     xtra_tfms = (zoom_crop(scale=(0.75,1.5), do_rand=True) 
                  + [cutout(n_holes=(1,4), length=(10, 40), p=0.7)])
     tfms = get_transforms(xtra_tfms=xtra_tfms)
