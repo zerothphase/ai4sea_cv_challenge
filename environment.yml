@@ -2,7 +2,7 @@ name: ai4sea
 channels:
   - pytorch
   - fastai
-  - anaconda
+  - conda-forge
   - defaults
 dependencies:
   - asn1crypto=0.24.0
@@ -12,25 +12,30 @@ dependencies:
   - blas=1.0
   - bleach=3.1.0
   - bottleneck=1.2.1
-  - ca-certificates=2019.5.15
+  - ca-certificates=2019.3.9
   - certifi=2019.3.9
   - cffi=1.12.3
   - chardet=3.0.4
-  - colorama=0.4.1
   - cryptography=2.7
   - cudatoolkit=10.0.130
   - cycler=0.10.0
   - cymem=2.0.2
   - cytoolz=0.9.0.1
   - dataclasses=0.6
+  - dbus=1.13.6
   - decorator=4.4.0
   - defusedxml=0.6.0
   - dill=0.2.9
   - entrypoints=0.3
+  - expat=2.2.6
   - fastai=1.0.53.post2
   - fastprogress=0.1.21
+  - fontconfig=2.13.0
   - freetype=2.9.1
-  - icc_rt=2019.0.0
+  - glib=2.56.2
+  - gmp=6.1.2
+  - gst-plugins-base=1.14.0
+  - gstreamer=1.14.0
   - icu=58.2
   - idna=2.8
   - intel-openmp=2019.4
@@ -46,16 +51,26 @@ dependencies:
   - jupyter=1.0.0
   - jupyter_client=5.2.4
   - jupyter_console=6.0.0
+  - jupyter_contrib_core=0.3.3
+  - jupyter_contrib_nbextensions=0.5.1
   - jupyter_core=4.4.0
+  - jupyter_highlight_selected_word=0.2.0
+  - jupyter_latex_envs=1.4.4
+  - jupyter_nbextensions_configurator=0.4.1
   - kiwisolver=1.1.0
+  - libedit=3.1.20181209
+  - libffi=3.2.1
+  - libgcc-ng=9.1.0
+  - libgfortran-ng=7.3.0
   - libpng=1.6.37
   - libsodium=1.0.16
+  - libstdcxx-ng=9.1.0
   - libtiff=4.0.10
-  - m2w64-gcc-libgfortran=5.3.0
-  - m2w64-gcc-libs=5.3.0
-  - m2w64-gcc-libs-core=5.3.0
-  - m2w64-gmp=6.1.0
-  - m2w64-libwinpthread-git=5.0.0.4634.697f757
+  - libuuid=1.0.3
+  - libxcb=1.13
+  - libxml2=2.9.9
+  - libxslt=1.1.32
+  - lxml=4.3.4
   - markupsafe=1.1.1
   - matplotlib=3.1.0
   - mistune=0.8.4
@@ -65,10 +80,10 @@ dependencies:
   - mkl_random=1.0.2
   - msgpack-numpy=0.4.3.2
   - msgpack-python=0.6.1
-  - msys2-conda-epoch=20160418
   - murmurhash=1.0.2
   - nbconvert=5.5.0
   - nbformat=4.4.0
+  - ncurses=6.1
   - ninja=1.9.0
   - notebook=5.7.8
   - numexpr=2.6.9
@@ -76,12 +91,14 @@ dependencies:
   - numpy-base=1.16.4
   - nvidia-ml-py3=7.352.0
   - olefile=0.46
-  - openssl=1.1.1
+  - openssl=1.1.1b
   - packaging=19.0
   - pandas=0.24.2
   - pandoc=2.2.3.2
   - pandocfilters=1.4.2
   - parso=0.4.0
+  - pcre=8.43
+  - pexpect=4.7.0
   - pickleshare=0.7.5
   - pillow=6.0.0
   - pip=19.1.1
@@ -89,23 +106,23 @@ dependencies:
   - preshed=2.0.1
   - prometheus_client=0.6.0
   - prompt_toolkit=2.0.9
+  - ptyprocess=0.6.0
   - pycparser=2.19
   - pygments=2.4.2
   - pyopenssl=19.0.0
   - pyparsing=2.4.0
   - pyqt=5.9.2
-  - pyreadline=2.1
   - pyrsistent=0.14.11
   - pysocks=1.7.0
   - python=3.7.3
   - python-dateutil=2.8.0
   - pytorch=1.1.0
   - pytz=2019.1
-  - pywinpty=0.5.5
   - pyyaml=5.1
   - pyzmq=18.0.0
   - qt=5.9.7
   - qtconsole=4.5.1
+  - readline=7.0
   - regex=2018.01.10
   - requests=2.22.0
   - scikit-learn=0.21.2
@@ -129,15 +146,10 @@ dependencies:
   - typing=3.6.4
   - ujson=1.35
   - urllib3=1.24.2
-  - vc=14.1
-  - vs2015_runtime=15.5.2
   - wcwidth=0.1.7
   - webencodings=0.5.1
   - wheel=0.33.4
   - widgetsnbextension=3.4.2
-  - win_inet_pton=1.1.0
-  - wincertstore=0.2
-  - winpty=0.4.3
   - wrapt=1.10.11
   - xz=5.2.4
   - yaml=0.1.7
@@ -146,5 +158,5 @@ dependencies:
   - zstd=1.3.7
   - pip:
     - efficientnet-pytorch==0.1.0
-prefix: C:\Users\zw91\Anaconda3\envs\ai4sea
+prefix: /home/zw91/anaconda3/envs/ai4sea
 
