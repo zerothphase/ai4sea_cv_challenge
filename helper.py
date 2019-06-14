@@ -20,14 +20,17 @@ DEVKIT_URL = "https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz"
 TEST_ANNOS_WITHLABELS_URL = "http://imagenet.stanford.edu/internal/car196/cars_test_annos_withlabels.mat"
 
 
-def download(url:str, dest_dir:Path) -> Path:
+def download(url:str, dest_dir:Path, fname:str=None) -> Path:
     assert isinstance(dest_dir, Path), "dest_dir must be a Path object"
-    if not DATA_PATH.exists():
-        DATA_PATH.mkdir()
-    filename = url.split('/')[-1]
+    if not dest_dir.exists(): 
+        dest_dir.mkdir(parents=True, exist_ok=True)
+    if fname == None: 
+        filename = url.split('/')[-1]
+    else: 
+        filename = fname
     file_path = dest_dir / filename
     if not file_path.exists():
-        with open(f'{dest_dir}/{filename}', 'wb') as f:
+        with open(f'{file_path}', 'wb') as f:
             response = requests.get(url, stream=True)
             total = int(response.headers.get('content-length'))
             with tqdm(total=total, unit='B', unit_scale=True, desc=filename) as pbar:
