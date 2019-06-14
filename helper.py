@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from efficientnet_pytorch import EfficientNet
 import torch
 from torch import nn
+import shutil
 
 WD_PATH = Path(".")
 DATA_PATH = WD_PATH / "Data"
@@ -18,7 +19,8 @@ CAR_TRAIN_URL = "http://imagenet.stanford.edu/internal/car196/cars_train.tgz"
 CAR_TEST_URL = "http://imagenet.stanford.edu/internal/car196/cars_test.tgz"
 DEVKIT_URL = "https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz"
 TEST_ANNOS_WITHLABELS_URL = "http://imagenet.stanford.edu/internal/car196/cars_test_annos_withlabels.mat"
-
+# Alternative, faster url from Fast.ai Dataset: https://course.fast.ai/datasets
+CAR_TRAIN_TEST_URL = "https://s3.amazonaws.com/fast-ai-imageclas/stanford-cars.tgz"
 
 def download(url:str, dest_dir:Path, fname:str=None) -> Path:
     assert isinstance(dest_dir, Path), "dest_dir must be a Path object"
@@ -30,6 +32,7 @@ def download(url:str, dest_dir:Path, fname:str=None) -> Path:
         filename = fname
     file_path = dest_dir / filename
     if not file_path.exists():
+        print(f"{file_path} not found, downloading...")
         with open(f'{file_path}', 'wb') as f:
             response = requests.get(url, stream=True)
             total = int(response.headers.get('content-length'))
@@ -60,10 +63,19 @@ def download_and_untar(url:str, dest_dir:Path) -> Path:
     return final_path
 
 def get_car_paths() -> (Path, Path):
-    train_path = download_and_untar(CAR_TRAIN_URL, DATA_PATH)
-    test_path = download_and_untar(CAR_TEST_URL, DATA_PATH)
+    train_path = DATA_PATH / "cars_train"
+    test_path = DATA_PATH / "cars_test"
+    if not train_path.exists() or not test_path.exists():
+        print(f"{train_path} or {test_path} not found, downloading...")
+        cars_folder_path = download_and_untar(CAR_TRAIN_TEST_URL, DATA_PATH)
+        for f in cars_folder_path.glob("*"):
+            shutil.move(str(f), DATA_PATH)
+        cars_folder_path.rmdir()
     devkit_path = download_and_untar(DEVKIT_URL, DATA_PATH)
     download(TEST_ANNOS_WITHLABELS_URL, devkit_path)
+    assert train_path.exists(), f"{train_path} does not exists!"
+    assert test_path.exists(), f"{test_path} does not exists!"
+    assert devkit_path.exists(), f"{devkit_path} does not exists!"
     return (train_path, test_path)
 
 def get_idx2name_dic() -> dict:
@@ -87,7 +99,6 @@ def get_cars_df(annos_matfile:str) -> pd.DataFrame:
     df = df.applymap(np.squeeze)
     idx2name_dic = get_idx2name_dic()
     df['class_name'] = df['class'].map(idx2name_dic)
-    
     return df[['fname', 'class_name', 'class']]
 
 def get_train_val_idx(num_examples, val_percent=0.2):
@@ -103,12 +114,10 @@ def get_car_data(dataset="train", tfms=None, bs=32, sz=224,
     train_path, test_path = get_car_paths()
     train_df = get_cars_df('cars_train_annos.mat')
     test_df = get_cars_df('cars_test_annos_withlabels.mat')
-    
     if stratify:
         strat = train_df.iloc[:,1]
     else:
         strat = None
-    
     if dataset == "train":
         _, val_idx = train_test_split(range(len(train_df)), test_size=split_pct, 
                                             random_state=seed, stratify=strat)
@@ -125,7 +134,6 @@ def get_car_data(dataset="train", tfms=None, bs=32, sz=224,
                 .transform([crop_pad(), crop_pad()], size=sz, padding_mode=padding_mode)
                 .databunch(bs=bs).normalize(imagenet_stats)
                 )
-
     return data
 
 def init_weights(m):
