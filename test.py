@@ -1,6 +1,6 @@
 """Script to evaluate exported models in `exported_models` folder on test set.
 
-Usage: python evaluate_test.py [-h] [-m MODEL] [-d {cpu,cuda}]
+Usage: python test.py [-h] [-m MODEL] [-d {cpu,cuda}]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -12,8 +12,8 @@ optional arguments:
                         'cuda' if available, else 'cpu'
 
 Examples:
->> python evaluate_test.py
->> python evaluate_test.py -m best_efficientnet-b0.pkl -d cuda
+>> python test.py
+>> python test.py -m best_efficientnet-b0.pkl -d cuda
 
 """
 from pathlib import Path
