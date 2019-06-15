@@ -1,31 +1,19 @@
 # Script to evaluate on test set
 from pathlib import Path
-import matplotlib.pyplot as plt
 import numpy as np
-import scipy.io
 import pandas as pd
-import PIL
 import time
-import os
 from helper import get_car_paths, get_cars_df
 from efficientnet_pytorch import EfficientNet
-import random
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 import argparse
-
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import datasets, models, transforms
-from torch import nn
-import torch.optim as optim
+from fastai.vision import Learner
+from fastai.vision import load_learner
+from fastai.vision import ImageList
+from fastai.vision import DatasetType
+from fastai.vision import defaults
 
-# Note this import * is intentionally done, as recommended by fast.ai to make sure 
-# that everything works
-from fastai.vision import *
-
-defaults.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-default_checkpoint = 'effnet-b0_best.pkl'
+default_checkpoint = 'best_efficientnet-b0.pkl'
 
 
 def get_exported_learner(folder_path:Path, filename:str) -> Learner:
@@ -108,10 +96,18 @@ def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path,
     accuracy = (y_preds == y_true).mean()
     return accuracy
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--model", help=f"Choose a trained model file from the folder `exported_models`. Default = '{default_checkpoint}'")
+    parser.add_argument("-d", "--device", choices=['cpu', 'gpu'], help="Choose to infer with 'cpu' or 'gpu'. Default is 'gpu' if compatible gpu is found, else 'cpu'")
+    args = parser.parse_args()
+    model = args.model
+    device = args.device
+    return model, device
+
 def main():
     
     model_cp, device = parse_args()
-
     if device is not None:
         defaults.device = torch.device(device)
     
@@ -123,10 +119,12 @@ def main():
     model_folder_path = Path("./exported_models")
     if model_cp == None:
         model_checkpoint = default_checkpoint
-        inference_learn = get_exported_learner(model_folder_path, model_checkpoint)
+        inference_learn = get_exported_learner(model_folder_path, 
+                                               model_checkpoint)
     else:
         model_checkpoint = model_cp
-        inference_learn = get_exported_learner(model_folder_path, model_checkpoint)
+        inference_learn = get_exported_learner(model_folder_path, 
+                                               model_checkpoint)
 
     print("="*70)
     print(f"Path to test images folder: \t{str(test_path)}/")
@@ -138,16 +136,8 @@ def main():
     # evaluate accuracy on test set
     print("Calculating accuracy of the test set...")
     accuracy = get_test_accuracy(inference_learn, test_df, test_path)
-    print(f"Accuracy on the test set is: {accuracy*100:.01f}%")
+    print(f"Accuracy on the test set is: {accuracy*100:.02f}%")
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", help=f"Choose a trained model file from the folder `exported_models`. Default = '{default_checkpoint}'")
-    parser.add_argument("-d", "--device", choices=['cpu', 'gpu'], help="Choose to infer with 'cpu' or 'gpu'. Default is 'gpu' if compatible gpu is found, else 'cpu'")
-    args = parser.parse_args()
-    model = args.model
-    device = args.device
-    return model, device
 
 if __name__ == "__main__":
     main()
