@@ -161,13 +161,17 @@ def main():
     print(f"Path to test images folder: \t{str(test_path)}/")
     print(f"Number of test images: \t\t{len(test_df)}")
     print(f"Loaded inference model: \t{model_checkpoint}")
-    print(f"\n\nShowing head of the test dataframe: \n {test_df.head()}")
+    print(f"Inference device: \t\t{defaults.device}")
     print("="*70, "\n\n")
     
     # Evaluate accuracy on test set
     print("Calculating accuracy of the test set...")
+    start = time.time()
     accuracy = get_test_accuracy(inference_learn, test_df, test_path)
-    print(f"Accuracy on the test set is: {accuracy*100:.02f}%")
+    infer_time = time.time() - start
+    mins, secs = divmod(infer_time, 60)
+    print(f"Accuracy on the test set: {accuracy*100:.02f}%")
+    print(f"Total inference time: {int(mins)} mins {int(secs)} s ")
 
 
 if __name__ == "__main__":
