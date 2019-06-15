@@ -96,10 +96,16 @@ def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path,
     accuracy = (y_preds == y_true).mean()
     return accuracy
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", help=f"Choose a trained model file from the folder `exported_models`. Default = '{default_checkpoint}'")
-    parser.add_argument("-d", "--device", choices=['cpu', 'cuda'], help="Choose to infer with 'cpu' or 'cuda'. Default is 'cuda' if available, else 'cpu'")
+def parse_args() -> str:
+    des = ("Script to evaluate exported models  in `exported_models` folder "
+           "on test set. ")
+    m_help = (f"Choose a trained model file from the folder `exported_models`. "
+              f"Default = '{default_checkpoint}'")
+    d_help = ("Choose to infer with 'cpu' or 'cuda'. "
+              "Default is 'cuda' if available, else 'cpu'")
+    parser = argparse.ArgumentParser(description=des)
+    parser.add_argument("-m", "--model", help=m_help)
+    parser.add_argument("-d", "--device", choices=['cpu', 'cuda'], help=d_help)
     args = parser.parse_args()
     model = args.model
     device = args.device
