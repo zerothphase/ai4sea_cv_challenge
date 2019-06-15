@@ -1,4 +1,21 @@
-# Script to evaluate on test set
+"""Script to evaluate exported models in `exported_models` folder on test set.
+
+Usage: python evaluate_test.py [-h] [-m MODEL] [-d {cpu,cuda}]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m MODEL, --model MODEL
+                        Choose a trained model file from the folder
+                        `exported_models`. Default = 'best_efficientnet-b0.pkl'
+  -d {cpu,cuda}, --device {cpu,cuda}
+                        Choose to infer with 'cpu' or 'cuda'. Default is
+                        'cuda' if available, else 'cpu'
+
+Examples:
+>> python evaluate_test.py
+>> python evaluate_test.py -m best_efficientnet-b0.pkl -d cuda
+
+"""
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -17,18 +34,23 @@ default_checkpoint = 'best_efficientnet-b0.pkl'
 
 
 def get_exported_learner(folder_path:Path, filename:str) -> Learner:
-    """
-    Get the exported Learner with `filename` (e.g. `learner.pkl`) in
-    the folder `folder_path`
+    """Return a Learner for inference
+    
+    Load the exported Learner with `filename` (e.g. `learner.pkl`) in
+    the folder `folder_path` and return it.
 
     Parameter:
-        folder_path:
-            Path to the folder containing the exported Learner
-        filename:
-            Filename of the exported Learner
+    ----------
+    folder_path:
+        Path to the folder containing the exported Learner
+    filename:
+        Filename of the exported Learner, which is exported using 
+        learn.export() method.
+    
     Return:
-        learn:
-            Fastai Learner object
+    -------
+    learn:
+        Fastai Learner object
     """
     model_path = folder_path / filename
     assert model_path.exists(), f"{filename} not found in {str(folder_path)}."
@@ -38,26 +60,30 @@ def get_exported_learner(folder_path:Path, filename:str) -> Learner:
 
 def get_predictions(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
                     cols:int=0) -> (np.ndarray, np.ndarray):
-    """
-    Get predictions of images in folder `test_path` with filenames listed 
-    in `cols`th column of `test_df`
-
-    Parameter:
-        learn: 
-            Trained fastai Learner object
-        test_df: 
-            DataFrame with filenames of the test images in one of the 
-            columns.
-        test_path: 
-            Path to the folder where test images are located.
-        cols:
-            Column index of the images' filenames.
+    """Infer on test images and return probabilities and predicted indices
     
-    Return:
-        probs:
-            Predicted probabilities of each classes
-        y_preds:
-            Predicted class index
+    Do inference with `learn` on images in folder `test_path` with 
+    filenames listed in `cols`th column of `test_df`. Returns probabilities
+    and predicted indices.
+
+    Parameters:
+    -----------
+    learn: 
+        Inference Learner object
+    test_df: 
+        DataFrame with filenames of the test images in one of the 
+        columns.
+    test_path: 
+        Path to the folder where test images are located.
+    cols:
+        Column index of the images' filenames.
+    
+    Returns:
+    --------
+    probs:
+        Predicted probabilities of each classes
+    y_preds:
+        Predicted class index
     """
     test_imagelist = ImageList.from_df(test_df, test_path, cols=cols)
     learn.data.add_test(test_imagelist)
@@ -67,29 +93,27 @@ def get_predictions(learn:Learner, test_df:pd.DataFrame, test_path:Path,
 
 def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
                     fn_col:int=0, label_col:int=1) -> np.float:
-    """
-    Get test accuracy of test images  
+    """Get test accuracy of test images  
 
-    Parameter:
-        learn: 
-            Trained fastai Learner object
-        test_df: 
-            DataFrame with filenames and class_names of the test 
-            images.
-        test_path: 
-            Path to the folder where the test images are located.
-        fn_col:
-            Column index of the images' filenames.
-        label_col:
-            Column index of the images' label (class_name). This 
-            will be mapped to the corresponding label index to 
-            be compared with the predicted label index by `learn`
+    Parameters:
+    -----------
+    learn: 
+        Trained fastai Learner object
+    test_df: 
+        DataFrame with filenames and class_names of the test images.
+    test_path: 
+        Path to the folder where the test images are located.
+    fn_col:
+        Column index of the images' filenames.
+    label_col:
+        Column index of the images' label (class_name). This will be mapped 
+        to the corresponding label index to be compared with the predicted 
+        label index by `learn`
     
-    Return:
-        probs:
-            Predicted probabilities of each classes
-        y_preds:
-            Predicted class index
+    Returns:
+    --------
+    accuracy:
+        Accuracy of test set
     """
     _, y_preds = get_predictions(learn, test_df, test_path, cols=fn_col)
     y_true = test_df.iloc[:,label_col].map(learn.data.c2i).values
@@ -97,6 +121,7 @@ def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path,
     return accuracy
 
 def parse_args() -> str:
+    """Return user input for inference model and device"""
     des = ("Script to evaluate exported models  in `exported_models` folder "
            "on test set. ")
     m_help = (f"Choose a trained model file from the folder `exported_models`. "
@@ -112,12 +137,12 @@ def parse_args() -> str:
     return model, device
 
 def main():
-    
+    """Main of the script to infer and evaluate on test set"""
     model_cp, device = parse_args()
     if device is not None:
         defaults.device = torch.device(device)
     
-    # get test dataframe and path to test folder.
+    # Get test dataframe and path to test folder.
     _, test_path = get_car_paths()
     test_df = get_cars_df('cars_test_annos_withlabels.mat')
 
@@ -139,7 +164,7 @@ def main():
     print(f"\n\nShowing head of the test dataframe: \n {test_df.head()}")
     print("="*70, "\n\n")
     
-    # evaluate accuracy on test set
+    # Evaluate accuracy on test set
     print("Calculating accuracy of the test set...")
     accuracy = get_test_accuracy(inference_learn, test_df, test_path)
     print(f"Accuracy on the test set is: {accuracy*100:.02f}%")
