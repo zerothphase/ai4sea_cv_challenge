@@ -99,7 +99,7 @@ def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path,
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", help=f"Choose a trained model file from the folder `exported_models`. Default = '{default_checkpoint}'")
-    parser.add_argument("-d", "--device", choices=['cpu', 'gpu'], help="Choose to infer with 'cpu' or 'gpu'. Default is 'gpu' if compatible gpu is found, else 'cpu'")
+    parser.add_argument("-d", "--device", choices=['cpu', 'cuda'], help="Choose to infer with 'cpu' or 'cuda'. Default is 'cuda' if available, else 'cpu'")
     args = parser.parse_args()
     model = args.model
     device = args.device
