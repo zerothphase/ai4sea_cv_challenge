@@ -128,17 +128,21 @@ def parse_args() -> str:
               f"Default = '{default_checkpoint}'")
     d_help = ("Choose to infer with 'cpu' or 'cuda'. "
               "Default is 'cuda' if available, else 'cpu'")
+    bs_help = "Batch size for inference. Default = 64"
     parser = argparse.ArgumentParser(description=des)
     parser.add_argument("-m", "--model", help=m_help)
     parser.add_argument("-d", "--device", choices=['cpu', 'cuda'], help=d_help)
+    parser.add_argument("-bs", "--batch_size", 
+                        default=64, type=int, help=bs_help)
     args = parser.parse_args()
     model = args.model
     device = args.device
-    return model, device
+    bs = args.batch_size
+    return model, device, bs
 
 def main():
     """Main of the script to infer and evaluate on test set"""
-    model_cp, device = parse_args()
+    model_cp, device, bs = parse_args()
     if device is not None:
         defaults.device = torch.device(device)
     
@@ -156,12 +160,13 @@ def main():
         model_checkpoint = model_cp
         inference_learn = get_exported_learner(model_folder_path, 
                                                model_checkpoint)
-
+    inference_learn.data.batch_size = bs
     print("="*70)
-    print(f"Path to test images folder: \t{str(test_path)}/")
-    print(f"Number of test images: \t\t{len(test_df)}")
-    print(f"Loaded inference model: \t{model_checkpoint}")
-    print(f"Inference device: \t\t{defaults.device}")
+    print(f"Path to test images folder\t: {str(test_path)}/")
+    print(f"Number of test images\t\t: {len(test_df)}")
+    print(f"Loaded inference model\t\t: {model_folder_path/model_checkpoint}")
+    print(f"Inference device\t\t: {defaults.device}")
+    print(f"Batch size\t\t\t: {bs}")
     print("="*70, "\n\n")
     
     # Evaluate accuracy on test set
