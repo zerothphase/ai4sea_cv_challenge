@@ -9,11 +9,13 @@ My Hardware:
 - GPU: Nvidia GeForce RTX 2070
 
 *Table 1: Comparison of EfficientBet-B0 and ResNet-50. Test accuracy and training time are averaged over 8 runs. Training time and CPU inference time are based on the hardware listed above.*
+
 | Model                             | #Params   | Training Time / Epoch | CPU Inference Time / Image| Test Accuracy  |
-| -------------                     |:--------: |:--:  |:--:           |-----:    |
-| **EfficientNet-B0 (my)**          | 4.3M      | 57.4 s | 0.1215 s  |92.43%     |
-| ResNet-50 (my)                | 25.7M     | 51.9 s  | 0.1926 s  | 92.64%  |
-| EfficientNet-B0 (Tan & Le 2019) | 5.3M*     | -  | -             |90.8%**     |
+| -------------                     | :--------: | :---------:                   |:---------:           | -----:    |
+| **EfficientNet-B0 (my)**          | 4.3M      | 57.4 s                | 0.1215 s  |92.43%     |
+| ResNet-50 (my)                    | 25.7M     | 51.9 s                | 0.1926 s  | 92.64%  |
+| EfficientNet-B0 (Tan & Le 2019)   | 5.3M*     |   -    |       -         |90.8%**     |
+
 \* 5.3M is the #Params for ImageNet. Tan & Le, 2019 did not report the #Params for Stanford Car dataset.  
 \*\* Image size for EfficientNet-B0 is 224x224 in Tan & Le, 2019, 300x300 in my solution.
 
