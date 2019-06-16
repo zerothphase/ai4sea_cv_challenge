@@ -6,7 +6,7 @@ This submission includes 3 main items for evaluation:
 - `train.py`: Use this script for retraining the models with the best settings that I found.
 - `00_Solution_Summary.ipynb`: Refer to this notebook for the summary the training process and evaluation of my final solution.
 
-Please refer to the [Usage](#Usage) section for instructions to use `test.py` and `train.py` for evaluation.
+Please refer to [Setup](#Setup) to install the dependencies and the [Usage](#Usage) section for instructions to use `test.py` and `train.py` for evaluation.
 
 Experiment notebooks are removed because the experiments were not systematically done and not documented.
 
