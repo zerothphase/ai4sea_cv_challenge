@@ -1,33 +1,41 @@
 # AI for SEA Computer Vision Challenge by Grab
 This repo is my submission for the [AI for SEA Computer Vision Challenge](https://www.aiforsea.com/) organized by Grab. The dataset for the CV challenge is the [Stanford Car Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html). The final submission will be judged based on Code Quality, Creativity in Problem-solving, Feature Engineering and Model Performance.
 
-## Summary of Work
-In this project, I mainly experimented with the latest light weight [EfficientNet](https://arxiv.org/abs/1905.11946) of Tan & Le, 2019 (PyTorch implementation by [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch/blob/master/README.md)) and uses Resnet50 as comparison. *Table 1* summarizes the results of my final solution.
+This submission includes 3 main items for evaluation:
+- `test.py`: Use this to evaluate the accuracy and inference time of my submitted models on test set. Two models are included in the `exported_models` folder.
+- `train.py`: Use this script for retraining the models with the best settings that I found.
+- `00_Solution_Summary.ipynb`: Refer to this notebook for the summary the training process and evaluation of my final solution.
 
-My Hardware:
-- CPU: Intel Core i5-8600K
-- GPU: Nvidia GeForce RTX 2070
+Please refer to the [Usage](#Usage) section for instructions to use `test.py` and `train.py` for evaluation.
 
-*Table 1: Comparison of EfficientBet-B0 and ResNet-50. Test accuracy and training time are averaged over 8 runs. Training time and CPU inference time are based on the hardware listed above.*
+Experiment notebooks are removed because the experiments were not systematically done and not documented.
+
+## Summary of Results
+The model of the final solution is a EfficientNet-B0 of [Tan & Le, 2019](https://arxiv.org/abs/1905.11946) (PyTorch implementation by [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch/blob/master/README.md)) and a Resnet-50 as baseline. In this project, it was found that both models can be trained from pretrained weights to reach **92+ % test accuracy** in just **60 epochs** at a batch size of 32 (Efficientnet-B0) or 64 (Resnet-50) using a single GPU thanks to [Fastai](https://docs.fast.ai/index.html) library. In comparison, Tan & Le, 2019 used training settings from [Kornblith et al. 2018](https://arxiv.org/abs/1805.08974) for fine-tuning pretrained Efficientnet-B0 with 20,000 steps at a batch size of 256 to reach ~90.8% test accuracy (they used image size of 224x224, I used 300x300).
+
+*Table 1* summarizes the results of my final solution. Refer to Section 3 and 4 of `00_Solution_Summary.ipynb` where I obtained the results in the table.
+
+
+*Table 1: Comparison of EfficientBet-B0 and ResNet-50 for Stanfor Car Dataset. Test accuracy and training time are averaged over 8 runs. Batch size of 1 is used to measure the CPU inference time. Training time and CPU inference time are based on a machine with Intel Core i5-8600K and Nvidia GeForce RTX 2070.*
 
 | Model                             | #Params   | Training Time / Epoch | CPU Inference Time / Image| Test Accuracy  |
 | -------------                     | :--------: | :---------:                   |:---------:           | -----:    |
-| **EfficientNet-B0 (my)**          | 4.3M      | 57.4 s                | 0.1215 s  |92.43%     |
-| ResNet-50 (my)                    | 25.7M     | 51.9 s                | 0.1926 s  | 92.64%  |
+| **EfficientNet-B0 (my)**          | 4.3M      | 57.4 s                | 0.11454 s  |92.43%     |
+| ResNet-50 (my)                    | 25.7M     | 51.9 s                | 0.18057 s  | 92.64%  |
 | EfficientNet-B0 (Tan & Le 2019)   | 5.3M*     |   -    |       -         |90.8%**     |
 
 \* 5.3M is the #Params for ImageNet. Tan & Le, 2019 did not report the #Params for Stanford Car dataset.  
 \*\* Image size for EfficientNet-B0 is 224x224 in Tan & Le, 2019, 300x300 in my solution.
 
-This project mainly uses the [Fastai](https://docs.fast.ai/) library which is built on top of Pytorch. Fastai provides high level but also flexible APIs for fast training of neural nets using modern deep learning best practices. The following techniques implemented in Fastai are used in my final solution.
+In this project, I leveraged the [Fastai](https://docs.fast.ai/) library which is built on top of Pytorch. Fastai provides high level but also flexible APIs for fast and accurate training of neural nets using modern deep learning best practices. The following techniques are used in my final solution.
 
 Data Augmentations:
-- resize image to size of(300, 300) using squish/stretch method (not crop)
+- resize image to size of (300, 300) using squish method (not crop)
 - standard fastai image transforms: random zoom, crop, horizontal flip, rotate, symmetric warp, change brightness/contrast
 - extra transforms: random zoom_crop with larger scale range, cutout
 
 Training tricks:
-- [1cycle policy](https://docs.fast.ai/callbacks.one_cycle.html) + [AdamW](https://arxiv.org/abs/1711.05101) optimizer for super fast convergence. 60 epochs to fine-tune ImageNet pretrained EfficientNet-b0 and ResNet-50 to reach 92+% accuracy
+- [1cycle policy](https://docs.fast.ai/callbacks.one_cycle.html) + [AdamW](https://arxiv.org/abs/1711.05101) optimizer for super fast convergence. 60 epochs to fine-tune ImageNet pretrained EfficientNet-b0 and ResNet-50 to reach 92+% accuracy (40 epochs showed a slight drop in accuracy.)
 - Label smoothing
 - Mixup
 - Mixed precision training
@@ -55,7 +63,7 @@ cd ai4sea_cv_challenge
 ```
 
 ## 3. Create conda environment and activate
-- Using environment.yml (Note: your current directory must be in /ai4sea_cv_challenge)
+- Using environment.yml (Note: your current directory must be in `/ai4sea_cv_challenge`)
 ```
 conda env create -f environment.yml
 conda activate ai4sea
@@ -72,13 +80,13 @@ pip install efficientnet_pytorch==0.1.0
 > If you already have a conda environment named `ai4sea`, edit the name in the first line of the `environment.yml`.
 
 # Usage
+Make sure you have activated the conda environment and switch your working directory to this repository.
 ## 1. Testing models
-I have included two models in `exported_models` folder: 
+I have included two models in `exported_models` folder for evaluation, which were trained using `train.py` script: 
 - `best_efficientnet-b0.pkl` (Test accuracy: 92.70%)
 - `best_resnet-50.pkl` (Test accuracy: 92.79%)
 
-Use `test.py` script to evaluate the accuracy on test set. 
-To test the model, type the name of the model after `-m` option. 
+Use `test.py` script with the command below to evaluate the accuracy of the models on test set. 
 
 Basic usage:
 ```
@@ -93,7 +101,7 @@ python test.py -m best_efficientnet-b0.pkl -d cpu -bs 1
 
 ## 2. Training models
 
-Use `test.py` script to retrain the model from Imagenet pretrained weights. You can also specify the number of runs (see options below) and the average metrics will be shown at the end. The trained model of the last run will also be exported to the `exported_models` folder with name `exported_<model>.pkl`.  
+`train.py` can be used to retrain the model from Imagenet pretrained weights using the training process of my solution. The number of runs (see options below) can also be specified and the average metrics will be shown at the end. The trained model of the last run will also be exported to the `exported_models` folder with name `exported_<model>.pkl`. You can checkout Section 3 of `00_Solution_Summary.ipynb`, where I used `train.py` to perform 8 training runs to obtain the average metrics of my solution.
 
 Basic usage example:
 ```
