@@ -4,7 +4,7 @@ This repo is my submission for the [AI for SEA Computer Vision Challenge](https:
 This submission includes 3 main items for evaluation:
 - `test.py`: Use this to evaluate the accuracy and inference time of my submitted models on test set. Two models are included in the `exported_models` folder.
 - `train.py`: If needed, use this script for retraining the models with the best settings that I found.
-- `00_Solution_Summary.ipynb`: Refer to this notebook for the summary the training process and evaluation of my final solution.
+- `00_Solution_Summary.ipynb`: Refer to this notebook for the summary of the training process and the evaluation of my final solution.
 
 Please refer to [Setup](#Setup) to install the dependencies and the [Usage](#Usage) section for instructions to use `test.py` and `train.py` for evaluation.
 
