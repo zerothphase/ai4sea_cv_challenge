@@ -3,7 +3,7 @@ This repo is my submission for the [AI for SEA Computer Vision Challenge](https:
 
 This submission includes 3 main items for evaluation:
 - `test.py`: Use this to evaluate the accuracy and inference time of my submitted models on test set. Two models are included in the `exported_models` folder.
-- `train.py`: Use this script for retraining the models with the best settings that I found.
+- `train.py`: If needed, use this script for retraining the models with the best settings that I found.
 - `00_Solution_Summary.ipynb`: Refer to this notebook for the summary the training process and evaluation of my final solution.
 
 Please refer to [Setup](#Setup) to install the dependencies and the [Usage](#Usage) section for instructions to use `test.py` and `train.py` for evaluation.
@@ -11,7 +11,7 @@ Please refer to [Setup](#Setup) to install the dependencies and the [Usage](#Usa
 Experiment notebooks are removed because the experiments were not systematically done and not documented.
 
 ## Summary of Results
-The model of the final solution is a EfficientNet-B0 of [Tan & Le, 2019](https://arxiv.org/abs/1905.11946) (PyTorch implementation by [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch/blob/master/README.md)) and a Resnet-50 as baseline. In this project, it was found that both models can be trained from pretrained weights to reach **92+ % test accuracy** in just **60 epochs** at a batch size of 32 (Efficientnet-B0) or 64 (Resnet-50) using a single GPU thanks to [Fastai](https://docs.fast.ai/index.html) library. In comparison, Tan & Le, 2019 used training settings from [Kornblith et al. 2018](https://arxiv.org/abs/1805.08974) for fine-tuning pretrained Efficientnet-B0 with 20,000 steps at a batch size of 256 to reach ~90.8% test accuracy (they used image size of 224x224, I used 300x300).
+The model of my final solution is a EfficientNet-B0 of [Tan & Le, 2019](https://arxiv.org/abs/1905.11946) (PyTorch implementation by [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch/blob/master/README.md)) and a Resnet-50 as baseline. In this project, it was found that both models can be trained from pretrained weights to reach **92+ % test accuracy** in just **60 epochs** at a batch size of 32 (Efficientnet-B0) or 64 (Resnet-50) using a single GPU thanks to [Fastai](https://docs.fast.ai/index.html) library. In comparison, Tan & Le, 2019 used training settings from [Kornblith et al. 2018](https://arxiv.org/abs/1805.08974) for fine-tuning pretrained Efficientnet-B0 with 20,000 steps at a batch size of 256 to reach ~90.8% test accuracy (they used an image size of 224x224, I used 300x300).
 
 *Table 1* summarizes the results of my final solution. Refer to Section 3 and 4 of `00_Solution_Summary.ipynb` where I obtained the results in the table.
 
@@ -24,7 +24,7 @@ The model of the final solution is a EfficientNet-B0 of [Tan & Le, 2019](https:/
 | ResNet-50 (my)                    | 25.7M     | 51.9 s                | 0.18057 s  | 92.64%  |
 | EfficientNet-B0 (Tan & Le 2019)   | 5.3M*     |   -    |       -         |90.8%**     |
 
-\* 5.3M is the #Params for ImageNet. Tan & Le, 2019 did not report the #Params for Stanford Car dataset.  
+\* 5.3M is the #Params for ImageNet. Tan & Le, 2019 did not report the #Params for Stanford Car dataset. It should be similar.  
 \*\* Image size for EfficientNet-B0 is 224x224 in Tan & Le, 2019, 300x300 in my solution.
 
 In this project, I leveraged the [Fastai](https://docs.fast.ai/) library which is built on top of Pytorch. Fastai provides high level but also flexible APIs for fast and accurate training of neural nets using modern deep learning best practices. The following techniques are used in my final solution.
@@ -57,6 +57,7 @@ rm ~/miniconda.sh && \
 source ~/.bashrc
 ```
 ## 2. Clone this repository
+Clone this repository and change working directory to the repository.
 ```
 git clone https://github.com/zerothphase/ai4sea_cv_challenge.git && \
 cd ai4sea_cv_challenge
@@ -78,7 +79,7 @@ pip install efficientnet_pytorch==0.1.0
 ```
 > **Note 1:**
 > If you already have a conda environment named `ai4sea`, edit the name in the first line of the `environment.yml`.  
-> **Note 2:** This will install the pytorch build with the latest cudatoolkit version. If you need a lower CUDA XX build (e.g. CUDA 9.0), following the instructions from [Pytorch's Website](https://pytorch.org/get-started/locally/) to install the desired pytorch build.
+> **Note 2:** Both steps above will install the pytorch build with the latest cudatoolkit version. If you need a lower CUDA XX build (e.g. CUDA 9.0), following the instructions from [Pytorch's Website](https://pytorch.org/get-started/locally/) to install the desired pytorch build.
 
 # Usage
 Make sure you have activated the conda environment and switch your working directory to this repository. During first run of either `test.py` or `train.py`, it will automatically download the train and test data into correct folders.
@@ -104,7 +105,7 @@ python test.py -m best_resnet-50.pkl -d cpu -bs 1
 
 ## 2. Training models
 
-`train.py` can be used to retrain the model from Imagenet pretrained weights using the training process of my solution. The number of runs (see options below) can also be specified and the average metrics will be shown at the end. The trained model of the last run will also be exported to the `exported_models` folder with name `exported_<model>.pkl`. You can checkout Section 3 of `00_Solution_Summary.ipynb`, where I used `train.py` to perform 8 training runs to obtain the average metrics of my solution.
+If needed, `train.py` can be used to retrain the model from Imagenet pretrained weights using the training process of my solution. The number of runs (see options below) can also be specified and the average metrics will be shown at the end. The trained model of the last run will be exported to the `exported_models` folder with a name `exported_<model>.pkl`, which you can also test using `test.py`. You can checkout Section 3 of `00_Solution_Summary.ipynb`, where I used `train.py` to perform 8 training runs to obtain the average metrics of my solution.
 
 Basic usage:
 ```
@@ -128,6 +129,9 @@ Example usage with more options:
 python train.py -m efficientnet-b0 -e 40 -n 5
 python train.py -m resnet-50 -e 10 20 -n 5
 ```
+
+# Acknowledgement
+Thanks Grab for organizing this challenge in which I learned a lot in the process of researching and experimenting for my best solution. Many thanks to Fast.ai's library and their incredible [Practical Deep Learning for Coders, V3](https://course.fast.ai/) free MOOC. Last but not least, thanks to [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch)'s implementation of Efficientnet in Pytorch.
 
 # References
 Kornblith, S., Shlens, J., and Le, Q. V. Do better imagenetmodels transfer better? *CVPR*, 2019.  
