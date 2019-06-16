@@ -76,6 +76,7 @@ conda activate ai4sea
 conda install -c pytorch -c fastai fastai=1.0.53.post2 -y
 conda install scikit-learn -y
 pip install efficientnet_pytorch==0.1.0
+conda install -c anaconda jupyter
 ```
 > **Note 1:**
 > If you already have a conda environment named `ai4sea`, edit the name in the first line of the `environment.yml`.  
