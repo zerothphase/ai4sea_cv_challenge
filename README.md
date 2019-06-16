@@ -34,11 +34,11 @@ Data Augmentations:
 - standard fastai image transforms: random zoom, crop, horizontal flip, rotate, symmetric warp, change brightness/contrast
 - extra transforms: random zoom_crop with larger scale range, cutout
 
-Training tricks:
+Training tricks, the last two tricks were discovered in [Bag of Tricks for Image Classification with Convolutional Neural Networks](https://arxiv.org/abs/1812.01187) which are also impelemted in Fastai:
 - [1cycle policy](https://docs.fast.ai/callbacks.one_cycle.html) + [AdamW](https://arxiv.org/abs/1711.05101) optimizer for super fast convergence. 60 epochs to fine-tune ImageNet pretrained EfficientNet-b0 and ResNet-50 to reach 92+% accuracy (40 epochs showed a slight drop in accuracy.)
+- Mixed precision training
 - Label smoothing
 - Mixup
-- Mixed precision training
 
 
 # Setup
@@ -68,7 +68,7 @@ cd ai4sea_cv_challenge
 conda env create -f environment.yml
 conda activate ai4sea
 ```
-- or manually
+- or manually (recommended if your system is not Ubuntu 18.04 / 16.04)
 ```
 conda create -n ai4sea python=3.7 -y
 conda activate ai4sea
@@ -76,11 +76,12 @@ conda install -c pytorch -c fastai fastai=1.0.53.post2 -y
 conda install scikit-learn -y
 pip install efficientnet_pytorch==0.1.0
 ```
-> **Note:**
-> If you already have a conda environment named `ai4sea`, edit the name in the first line of the `environment.yml`.
+> **Note 1:**
+> If you already have a conda environment named `ai4sea`, edit the name in the first line of the `environment.yml`.  
+> **Note 2:** This will install the pytorch build with the latest cudatoolkit version. If you need a lower CUDA XX build (e.g. CUDA 9.0), following the instructions from [Pytorch's Website](https://pytorch.org/get-started/locally/) to install the desired pytorch build.
 
 # Usage
-Make sure you have activated the conda environment and switch your working directory to this repository. During first run of either `test.py` or `train.py`, it will automatically download the Stanford Car Dataset into correct folders.
+Make sure you have activated the conda environment and switch your working directory to this repository. During first run of either `test.py` or `train.py`, it will automatically download the train and test data into correct folders.
 ## 1. Testing models
 I have included two models in `exported_models` folder for evaluation, which were trained using `train.py` script: 
 - `best_efficientnet-b0.pkl` (Test accuracy: 92.70%)
@@ -91,21 +92,24 @@ Use `test.py` script with the command below to evaluate the accuracy of the mode
 Basic usage:
 ```
 python test.py -m best_efficientnet-b0.pkl
+python test.py -m best_resnet-50.pkl
 ```
 Optionally, you can specify inference device using `-d {cpu, gpu}` and batch size using `-bs int` options. 
 
 Example usage with more options:
 ```
 python test.py -m best_efficientnet-b0.pkl -d cpu -bs 1
+python test.py -m best_resnet-50.pkl -d cpu -bs 1
 ```
 
 ## 2. Training models
 
 `train.py` can be used to retrain the model from Imagenet pretrained weights using the training process of my solution. The number of runs (see options below) can also be specified and the average metrics will be shown at the end. The trained model of the last run will also be exported to the `exported_models` folder with name `exported_<model>.pkl`. You can checkout Section 3 of `00_Solution_Summary.ipynb`, where I used `train.py` to perform 8 training runs to obtain the average metrics of my solution.
 
-Basic usage example:
+Basic usage:
 ```
 python train.py -m efficientnet-b0
+python train.py -m resnet-50
 ```
 Options:
 
@@ -115,13 +119,11 @@ Model with pretrained weights to be trained. Default = 'efficientnet-b0'
 `-n NRUNS`  
 Number of training runs. Default = 1
 
-`-e EPOCHS [EPOCHS ...]`
-
-Number of epochs. Note that resnet-50 will be trained in two phases, hence can accept up to two values. If only one value is specified, then the same value will be used in the second phase.
-
+`-e EPOCHS [EPOCHS ...]`  
+Number of epochs. Note that resnet-50 will be trained in two phases, hence can accept up to two values. If only one value is specified, then the same value will be used in the second phase.  
 Default for `efficientnet-bx` = 60, `resnet-50` = 20 40.
 
-Usage example with more options:
+Example usage with more options:
 ```
 python train.py -m efficientnet-b0 -e 40 -n 5
 python train.py -m resnet-50 -e 10 20 -n 5
