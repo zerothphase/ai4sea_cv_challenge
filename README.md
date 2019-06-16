@@ -80,7 +80,7 @@ pip install efficientnet_pytorch==0.1.0
 > If you already have a conda environment named `ai4sea`, edit the name in the first line of the `environment.yml`.
 
 # Usage
-Make sure you have activated the conda environment and switch your working directory to this repository.
+Make sure you have activated the conda environment and switch your working directory to this repository. During first run of either `test.py` or `train.py`, it will automatically download the Stanford Car Dataset into correct folders.
 ## 1. Testing models
 I have included two models in `exported_models` folder for evaluation, which were trained using `train.py` script: 
 - `best_efficientnet-b0.pkl` (Test accuracy: 92.70%)
