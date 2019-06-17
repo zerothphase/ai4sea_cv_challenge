@@ -1,12 +1,13 @@
 # AI for SEA Computer Vision Challenge by Grab
 This repo is my submission for the [AI for SEA Computer Vision Challenge](https://www.aiforsea.com/) organized by Grab. The dataset for the CV challenge is the [Stanford Car Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html). The final submission will be judged based on Code Quality, Creativity in Problem-solving, Feature Engineering and Model Performance.
 
-This submission includes 3 main items for evaluation:
+This submission includes 4 main items for evaluation:
 - `test.py`: Use this to evaluate the accuracy and inference time of my submitted models on test set. Two models are included in the `exported_models` folder.
 - `train.py`: If needed, use this script for retraining the models with the best settings that I found.
+- `predict.py`: Use this to get predictions using one of my submitted models on new images within a folder. An `output.csv` file will be exported.
 - `00_Solution_Summary.ipynb`: Refer to this notebook for the summary of the training process and the evaluation of my final solution.
 
-Please refer to [Setup](#Setup) to install the dependencies and the [Usage](#Usage) section for instructions to use `test.py` and `train.py` for evaluation.
+Please refer to [Setup](#Setup) to install the dependencies and the [Usage](#Usage) section for instructions to use `test.py`, `train.py` and `predict.py` for evaluation.
 
 Experiment notebooks are removed because the experiments were not systematically done and not documented.
 
@@ -129,6 +130,15 @@ Example usage with more options:
 ```
 python train.py -m efficientnet-b0 -e 40 -n 5
 python train.py -m resnet-50 -e 10 20 -n 5
+```
+## 3. Getting Predictions
+`predict.py` can be use to get predictions on new images located in a folder. The options are the same as `test.py`, with an additional option `-f`. Use `-f` to specify the path to the image folder. Note that there must be more than 1 images in specified folder.  
+An `output.csv` will be saved in this repository with two columns of `image_path` and predicted `target`.
+
+Basic usage:
+```
+python test.py -m best_efficientnet-b0.pkl -f ./Data/cars_test
+python test.py -m best_resnet-50.pkl -f ./Data/cars_test
 ```
 
 # Acknowledgement
