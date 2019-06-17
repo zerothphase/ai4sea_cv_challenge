@@ -137,8 +137,8 @@ An `output.csv` will be saved in this repository with two columns of `image_path
 
 Basic usage:
 ```
-python test.py -m best_efficientnet-b0.pkl -f ./Data/cars_test
-python test.py -m best_resnet-50.pkl -f ./Data/cars_test
+python predict.py -m best_efficientnet-b0.pkl -f ./Data/cars_test
+python predict.py -m best_resnet-50.pkl -f ./Data/cars_test
 ```
 
 # Acknowledgement
