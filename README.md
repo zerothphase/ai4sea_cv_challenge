@@ -97,7 +97,7 @@ Basic usage:
 python test.py -m best_efficientnet-b0.pkl
 python test.py -m best_resnet-50.pkl
 ```
-Optionally, you can specify inference device using `-d {cpu, gpu}` and batch size using `-bs int` options. 
+Optionally, you can specify inference device using `-d {cpu, cuda}` and batch size using `-bs int` options. 
 
 Example usage with more options:
 ```
