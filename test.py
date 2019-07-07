@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import time
-from helper import get_car_paths, get_cars_df
+from helper import get_car_paths, get_cars_df, get_exported_learner
 from efficientnet_pytorch import EfficientNet
 import argparse
 import torch
@@ -33,30 +33,6 @@ from fastai.vision import defaults
 default_checkpoint = 'best_efficientnet-b0.pkl'
 
 
-def get_exported_learner(folder_path:Path, filename:str) -> Learner:
-    """Return a Learner for inference
-    
-    Load the exported Learner with `filename` (e.g. `learner.pkl`) in
-    the folder `folder_path` and return it.
-
-    Parameter:
-    ----------
-    folder_path:
-        Path to the folder containing the exported Learner
-    filename:
-        Filename of the exported Learner, which is exported using 
-        learn.export() method.
-    
-    Return:
-    -------
-    learn:
-        Fastai Learner object
-    """
-    model_path = folder_path / filename
-    assert model_path.exists(), f"{filename} not found in {str(folder_path)}."
-    learn = load_learner(folder_path, filename)
-    learn.to_fp32()
-    return learn
 
 def get_predictions(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
                     cols:int=0) -> (np.ndarray, np.ndarray):

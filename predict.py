@@ -4,18 +4,17 @@ import pandas as pd
 import time
 from helper import get_car_paths
 from helper import get_cars_df
-from helper import get_predictions
 from helper import get_predictions_from_folder
+from helper import get_exported_learner
 from efficientnet_pytorch import EfficientNet
 import argparse
 import torch
 from fastai.vision import Learner
-from fastai.vision import load_learner
 from fastai.vision import ImageList
 from fastai.vision import DatasetType
 from fastai.vision import defaults
-from test import get_exported_learner, default_checkpoint
 
+default_checkpoint = 'best_efficientnet-b0.pkl'
 
 def parse_args() -> str:
     """Return user inputs"""

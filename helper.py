@@ -7,6 +7,7 @@ import scipy.io
 import pandas as pd
 import os
 from fastai.vision import ImageList, crop_pad, imagenet_stats, Learner, DatasetType
+from fastai.vision import load_learner
 from sklearn.model_selection import train_test_split
 from efficientnet_pytorch import EfficientNet
 import torch
@@ -198,3 +199,29 @@ def get_predictions_from_folder(learn:Learner,
     test_imagelist = ImageList.from_folder(test_path)
     x, class_preds, max_probs = get_predictions(learn, test_imagelist)
     return x, class_preds, max_probs
+
+
+def get_exported_learner(folder_path:Path, filename:str) -> Learner:
+    """Return a Learner for inference
+    
+    Load the exported Learner with `filename` (e.g. `learner.pkl`) in
+    the folder `folder_path` and return it.
+
+    Parameter:
+    ----------
+    folder_path:
+        Path to the folder containing the exported Learner
+    filename:
+        Filename of the exported Learner, which is exported using 
+        learn.export() method.
+    
+    Return:
+    -------
+    learn:
+        Fastai Learner object
+    """
+    model_path = folder_path / filename
+    assert model_path.exists(), f"{filename} not found in {str(folder_path)}."
+    learn = load_learner(folder_path, filename)
+    learn.to_fp32()
+    return learn
