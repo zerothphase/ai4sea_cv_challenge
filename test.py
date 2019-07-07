@@ -66,12 +66,9 @@ def main():
     model_folder_path = Path("./exported_models")
     if model_cp == None:
         model_checkpoint = default_checkpoint
-        inference_learn = get_exported_learner(model_folder_path, 
-                                               model_checkpoint)
     else:
         model_checkpoint = model_cp
-        inference_learn = get_exported_learner(model_folder_path, 
-                                               model_checkpoint)
+    inference_learn = get_exported_learner(model_folder_path, model_checkpoint)
     inference_learn.data.batch_size = bs
     print("="*70)
     print(f"Path to test images folder\t: {str(test_path)}/")

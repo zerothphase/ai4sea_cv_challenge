@@ -55,12 +55,9 @@ def main():
     model_folder_path = Path("./exported_models")
     if model_cp == None:
         model_checkpoint = default_checkpoint
-        inference_learn = get_exported_learner(model_folder_path, 
-                                               model_checkpoint)
     else:
         model_checkpoint = model_cp
-        inference_learn = get_exported_learner(model_folder_path, 
-                                               model_checkpoint)
+    inference_learn = get_exported_learner(model_folder_path, model_checkpoint)
     inference_learn.data.batch_size = bs
     print("="*70)
     print(f"Path to test images folder\t: {str(test_path)}")
@@ -73,8 +70,7 @@ def main():
     # Evaluate accuracy on test set
     print("Making predictions...")
     start = time.time()
-    x, y_preds, probs = get_predictions_from_folder(inference_learn, 
-                                                              test_path)
+    x, y_preds, probs = get_predictions_from_folder(inference_learn, test_path)
     class_preds = idx_to_classname(y_preds, inference_learn)
     # Export predictions to output.csv
     output_df = pd.DataFrame(np.array([x, class_preds, probs]).transpose(), 
@@ -84,13 +80,9 @@ def main():
     output_df.to_csv("output.csv", index=False)
     print("\n\nAll predictions are exported as `output.csv`")
 
-    
-    
-    
     infer_time = time.time() - start
     mins, secs = divmod(infer_time, 60)
-
-
+    print(f"Total inference time: {int(mins)} mins {int(secs)} s ")
 
 if __name__ == "__main__":
     main()
