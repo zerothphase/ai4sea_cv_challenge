@@ -32,35 +32,6 @@ from fastai.vision import defaults
 
 default_checkpoint = 'best_efficientnet-b0.pkl'
 
-def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
-                    fn_col:int=0, label_col:int=1) -> np.float:
-    """Get test accuracy of test images  
-
-    Parameters:
-    -----------
-    learn: 
-        Trained fastai Learner object
-    test_df: 
-        DataFrame with filenames and class_names of the test images.
-    test_path: 
-        Path to the folder where the test images are located.
-    fn_col:
-        Column index of the images' filenames.
-    label_col:
-        Column index of the images' label (class_name). This will be mapped 
-        to the corresponding label index to be compared with the predicted 
-        label index by `learn`
-    
-    Returns:
-    --------
-    accuracy:
-        Accuracy of test set
-    """
-    _, y_preds, _ = get_predictions_from_df(learn, test_df, test_path, cols=fn_col)
-    y_true = test_df.iloc[:,label_col].map(learn.data.c2i).values
-    accuracy = (y_preds == y_true).mean()
-    return accuracy
-
 def parse_args() -> str:
     """Return user input for inference model and device"""
     des = ("Script to evaluate exported models  in `exported_models` folder "
@@ -113,7 +84,11 @@ def main():
     # Evaluate accuracy on test set
     print("Calculating accuracy of the test set...")
     start = time.time()
-    accuracy = get_test_accuracy(inference_learn, test_df, test_path)
+    fn_col = 0
+    label_col = 1
+    _, y_preds, _ = get_predictions_from_df(inference_learn, test_df, test_path, cols=fn_col)
+    y_true = test_df.iloc[:,label_col].map(inference_learn.data.c2i).values
+    accuracy = (y_preds == y_true).mean()
     infer_time = time.time() - start
     mins, secs = divmod(infer_time, 60)
     print(f"Accuracy on the test set: {accuracy*100:.02f}%")
