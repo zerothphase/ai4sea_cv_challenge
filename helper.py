@@ -24,6 +24,7 @@ TEST_ANNOS_WITHLABELS_URL = "http://imagenet.stanford.edu/internal/car196/cars_t
 CAR_TRAIN_TEST_URL = "https://s3.amazonaws.com/fast-ai-imageclas/stanford-cars.tgz"
 
 def download(url:str, dest_dir:Path, fname:str=None) -> Path:
+    """Download file from a url to the target directory and return downloaded file path"""
     assert isinstance(dest_dir, Path), "dest_dir must be a Path object"
     if not dest_dir.exists(): 
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -46,6 +47,7 @@ def download(url:str, dest_dir:Path, fname:str=None) -> Path:
     return file_path
 
 def untar_tgz(tgz_path: Path, dest_dir:Path) -> Path:
+    """Unzip tgz file and return path to the unzipped folder"""
     assert isinstance(tgz_path, Path), "tgz_path must be a Path object"
     assert tgz_path.exists(), "tgz_path does not exists"
     assert tgz_path.suffix == ".tgz", "tgz_path is not a .tgz file"
@@ -59,11 +61,19 @@ def untar_tgz(tgz_path: Path, dest_dir:Path) -> Path:
     return final_path
 
 def download_and_untar(url:str, dest_dir:Path) -> Path:
+    """Download tgz file from url, unzip and return path to the unzipped folder"""
     tar_path = download(url, dest_dir)
     final_path = untar_tgz(tar_path, dest_dir)
     return final_path
 
 def get_car_paths() -> (Path, Path):
+    """Get paths to the train and test data of Stanford Car Dataset
+
+    Returns:
+    --------
+    train_path, test_path: 
+        Tuple of paths to train and test set
+    """
     train_path = DATA_PATH / "cars_train"
     test_path = DATA_PATH / "cars_test"
     if not train_path.exists() or not test_path.exists():
@@ -80,6 +90,7 @@ def get_car_paths() -> (Path, Path):
     return (train_path, test_path)
 
 def get_idx2name_dic() -> dict:
+    """Get index to name dictionary of Stanford Car dataset"""
     devkit_path = download_and_untar(DEVKIT_URL, DATA_PATH)
     cars_metas = scipy.io.loadmat(devkit_path / 'cars_meta.mat')
     cars_metas = cars_metas['class_names'].squeeze()
@@ -90,6 +101,7 @@ def get_idx2name_dic() -> dict:
     return idx2name_dic
 
 def get_cars_df(annos_matfile:str) -> pd.DataFrame:
+    """Get dataframe with columns of fname, class_name and class of Stanford Car dataset"""
     assert annos_matfile in ['cars_train_annos.mat', 'cars_test_annos_withlabels.mat'], \
            "Please select 'cars_train_annos.mat' or 'cars_test_annos_withlabels.mat'"
            
@@ -108,9 +120,35 @@ def get_train_val_idx(num_examples, val_percent=0.2):
     train_idx, val_idx = random_idx[:num_train], random_idx[num_train:]
     return train_idx, val_idx
 
-def get_car_data(dataset="train", tfms=None, bs=32, sz=224, 
-                 padding_mode='reflection', stratify=True, seed=None, split_pct=0.2):
+def get_car_data(dataset:str="train", tfms=None, bs:int=32, sz=224, 
+                 padding_mode:str='reflection', stratify:bool=True, 
+                 seed:int=None, split_pct:float=0.2):
+    """Get train or test ImageDataBunch of Stanford Car dataset
     
+    Parameters:
+    -----------
+    dataset:
+        Select "train" or "test" dataset
+    tfms:
+        Transformations for data augmentation of train set. 
+    bs:
+        Batch size
+    sz: 
+        Final size of image. If int is given, crop method will be used to resize.
+        If a tuple of two ints is given, squish method will be used.
+    padding_mode:
+        Padding method. See fastai docs for more methods.
+    stratify:
+        If True, stratified train/valid split will be applied, else random split.
+    split_pct:
+        Split percentage for validation set
+
+    Returns:
+    --------
+    data:
+        ImageDataBunch of train or test set
+    
+    """
     assert dataset in ["train", "test"], "`dataset` must be `train` or `test`"
     train_path, test_path = get_car_paths()
     train_df = get_cars_df('cars_train_annos.mat')
@@ -151,8 +189,25 @@ def split_effnet(m):
             list(m.children())[5]
             )
 
-def get_effnet(name="efficientnet-b0", pretrained=True, n_class=None, dropout_p=0.5):
-    
+def get_effnet(name:str="efficientnet-b0", pretrained:bool=True, 
+               n_class:int=None, dropout_p:float=0.5):
+    """Get Efficientnet for multiclass classification with `n_class` 
+
+    Parameters:
+    -----------
+    name: {"efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "efficientnet-b3"}
+        Name of the efficientnet variant
+    pretrained:
+        If True, pretrained weights will be loaded
+    n_class:
+        Number of unique class of the targets
+    dropout_p:
+        Dropout probability of the FC layer of the new head.
+    Returns:
+    --------
+    m: 
+        Efficientnet nn.Module
+    """
     assert n_class != None, "Please specify the number of output classes `n_class`"
     if pretrained == True:
         print(f"Getting pretrained {name}")
@@ -178,8 +233,7 @@ def get_predictions(learn:Learner, imagelist:ImageList):
 
 def get_predictions_from_folder(learn:Learner, 
                                 test_path:Path) -> (np.ndarray, np.ndarray, np.ndarray):
-    """Infer on images in a folder and return predicted class and paths to the
-    images.
+    """Get predictions of images in a folder
 
     Parameters:
     -----------
@@ -190,10 +244,12 @@ def get_predictions_from_folder(learn:Learner,
     
     Returns:
     --------
-    class_preds:
-        Predicted class (not index)
     x:
         Paths of the input images
+    y_preds:
+        Predicted indices of the class with the highest probability
+    max_probs:
+        Probabilities of y_preds
     """
     test_imagelist = ImageList.from_folder(test_path)
     x, y_preds, max_probs = get_predictions(learn, test_imagelist)
@@ -201,16 +257,14 @@ def get_predictions_from_folder(learn:Learner,
 
 def get_predictions_from_df(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
                             cols:int=0) -> (np.ndarray, np.ndarray, np.ndarray):
-    """Infer on images from dataframe and return predicted class and paths to the
-    images.
+    """Get predictions of images from dataframe
 
     Parameters:
     -----------
     learn: 
         Inference Learner object
     test_df: 
-        DataFrame with filenames of the test images in one of the 
-        columns.
+        DataFrame with filenames of the test images in one of the columns.
     test_path: 
         Path to the folder where test images are located.
     cols:
@@ -218,10 +272,12 @@ def get_predictions_from_df(learn:Learner, test_df:pd.DataFrame, test_path:Path,
     
     Returns:
     --------
-    class_preds:
-        Predicted class (not index)
     x:
         Paths of the input images
+    y_preds:
+        Predicted indices of the class with the highest probability
+    max_probs:
+        Probabilities of y_preds
     """
     test_imagelist = ImageList.from_df(test_df, test_path, cols=cols)
     x, y_preds, max_probs = get_predictions(learn, test_imagelist)
@@ -253,5 +309,6 @@ def get_exported_learner(folder_path:Path, filename:str) -> Learner:
     return learn
 
 def idx_to_classname(y_preds, learn:Learner):
+    """Convert predicted indices to classname using mapping from learn."""
     class_preds = np.array(learn.data.single_ds.y.classes)[y_preds]
     return class_preds
