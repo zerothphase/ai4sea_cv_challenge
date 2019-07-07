@@ -177,7 +177,7 @@ def get_predictions(learn:Learner, imagelist:ImageList):
     return x, y_preds.numpy(), max_probs.numpy()
 
 def get_predictions_from_folder(learn:Learner, 
-                                test_path:Path) -> (list, np.ndarray, np.ndarray):
+                                test_path:Path) -> (np.ndarray, np.ndarray, np.ndarray):
     """Infer on images in a folder and return predicted class and paths to the
     images.
 
@@ -199,6 +199,33 @@ def get_predictions_from_folder(learn:Learner,
     x, y_preds, max_probs = get_predictions(learn, test_imagelist)
     return x, y_preds, max_probs
 
+def get_predictions_from_df(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
+                            cols:int=0) -> (np.ndarray, np.ndarray, np.ndarray):
+    """Infer on images from dataframe and return predicted class and paths to the
+    images.
+
+    Parameters:
+    -----------
+    learn: 
+        Inference Learner object
+    test_df: 
+        DataFrame with filenames of the test images in one of the 
+        columns.
+    test_path: 
+        Path to the folder where test images are located.
+    cols:
+        Column index of the images' filenames.
+    
+    Returns:
+    --------
+    class_preds:
+        Predicted class (not index)
+    x:
+        Paths of the input images
+    """
+    test_imagelist = ImageList.from_df(test_df, test_path, cols=cols)
+    x, y_preds, max_probs = get_predictions(learn, test_imagelist)
+    return x, y_preds, max_probs
 
 def get_exported_learner(folder_path:Path, filename:str) -> Learner:
     """Return a Learner for inference

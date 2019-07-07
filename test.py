@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import time
-from helper import get_car_paths, get_cars_df, get_exported_learner
+from helper import get_car_paths, get_cars_df, get_exported_learner, get_predictions_from_df
 from efficientnet_pytorch import EfficientNet
 import argparse
 import torch
@@ -31,41 +31,6 @@ from fastai.vision import DatasetType
 from fastai.vision import defaults
 
 default_checkpoint = 'best_efficientnet-b0.pkl'
-
-
-
-def get_predictions(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
-                    cols:int=0) -> (np.ndarray, np.ndarray):
-    """Infer on test images and return probabilities and predicted indices
-    
-    Do inference with `learn` on images in folder `test_path` with 
-    filenames listed in `cols`th column of `test_df`. Returns probabilities
-    and predicted indices.
-
-    Parameters:
-    -----------
-    learn: 
-        Inference Learner object
-    test_df: 
-        DataFrame with filenames of the test images in one of the 
-        columns.
-    test_path: 
-        Path to the folder where test images are located.
-    cols:
-        Column index of the images' filenames.
-    
-    Returns:
-    --------
-    probs:
-        Predicted probabilities of each classes
-    y_preds:
-        Predicted class index
-    """
-    test_imagelist = ImageList.from_df(test_df, test_path, cols=cols)
-    learn.data.add_test(test_imagelist)
-    probs, _ = learn.get_preds(ds_type=DatasetType.Test)
-    y_preds = torch.argmax(probs, dim=1)
-    return probs.numpy(), y_preds.numpy()
 
 def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path, 
                     fn_col:int=0, label_col:int=1) -> np.float:
@@ -91,7 +56,7 @@ def get_test_accuracy(learn:Learner, test_df:pd.DataFrame, test_path:Path,
     accuracy:
         Accuracy of test set
     """
-    _, y_preds = get_predictions(learn, test_df, test_path, cols=fn_col)
+    _, y_preds, _ = get_predictions_from_df(learn, test_df, test_path, cols=fn_col)
     y_true = test_df.iloc[:,label_col].map(learn.data.c2i).values
     accuracy = (y_preds == y_true).mean()
     return accuracy
