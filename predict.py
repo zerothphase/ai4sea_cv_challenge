@@ -36,10 +36,10 @@ def get_predictions_from_folder(learn:Learner,
     learn.data.add_test(test_imagelist)
     logits, _ = learn.get_preds(ds_type=DatasetType.Test)
     probs = torch.nn.functional.softmax(logits, dim=1)
-    y_preds = torch.argmax(probs, dim=1)
+    max_probs, y_preds = torch.max(probs, dim=1)
     class_preds = np.array(learn.data.single_ds.y.classes)[y_preds]
     x = learn.data.test_ds.x.items
-    return class_preds, x
+    return class_preds, x, max_probs.numpy()
 
 def parse_args() -> str:
     """Return user inputs"""
@@ -97,11 +97,11 @@ def main():
     # Evaluate accuracy on test set
     print("Making predictions...")
     start = time.time()
-    class_preds, x = get_predictions_from_folder(inference_learn, 
+    class_preds, x, probs = get_predictions_from_folder(inference_learn, 
                                                               test_path)
     # Export predictions to output.csv
-    output_df = pd.DataFrame(np.array([x, class_preds]).transpose(), 
-                             columns=["image_path", "target"])
+    output_df = pd.DataFrame(np.array([x, class_preds, probs]).transpose(), 
+                             columns=["image_path", "target", "probability"])
     print("Showing dataframe of the first 5 predictions")
     print(output_df.head())
     output_df.to_csv("output.csv", index=False)
