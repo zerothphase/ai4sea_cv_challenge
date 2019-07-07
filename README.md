@@ -133,7 +133,7 @@ python train.py -m resnet-50 -e 10 20 -n 5
 ```
 ## 3. Getting Predictions
 `predict.py` can be use to get predictions on new images located in a folder. The options are the same as `test.py`, with an additional option `-f`. Use `-f` to specify the path to the image folder. Note that there must be more than 1 images in specified folder.  
-An `output.csv` will be saved in this repository with two columns of `image_path` and predicted `target`.
+An `output.csv` will be saved in this repository with two columns of `image_path`, predicted `target` and `probability`.
 
 Basic usage:
 ```
