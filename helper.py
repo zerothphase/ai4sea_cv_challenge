@@ -6,7 +6,7 @@ import numpy as np
 import scipy.io
 import pandas as pd
 import os
-from fastai.vision import ImageList, crop_pad, imagenet_stats
+from fastai.vision import ImageList, crop_pad, imagenet_stats, Learner, DatasetType
 from sklearn.model_selection import train_test_split
 from efficientnet_pytorch import EfficientNet
 import torch
@@ -166,3 +166,35 @@ def get_effnet(name="efficientnet-b0", pretrained=True, n_class=None, dropout_p=
         nn.Linear(n_in, n_class))
     m._fc.apply(init_weights)
     return m
+
+def get_predictions(learn:Learner, imagelist:ImageList):
+    learn.data.add_test(imagelist)
+    logits, _ = learn.get_preds(ds_type=DatasetType.Test)
+    probs = torch.nn.functional.softmax(logits, dim=1)
+    max_probs, y_preds = torch.max(probs, dim=1)
+    class_preds = np.array(learn.data.single_ds.y.classes)[y_preds]
+    x = learn.data.test_ds.x.items
+    return x, class_preds, max_probs.numpy()
+
+def get_predictions_from_folder(learn:Learner, 
+                                test_path:Path) -> (np.ndarray, np.ndarray):
+    """Infer on images in a folder and return predicted class and paths to the
+    images.
+
+    Parameters:
+    -----------
+    learn: 
+        Inference Learner object
+    test_path: 
+        Path to the folder where test images are located.
+    
+    Returns:
+    --------
+    class_preds:
+        Predicted class (not index)
+    x:
+        Paths of the input images
+    """
+    test_imagelist = ImageList.from_folder(test_path)
+    x, class_preds, max_probs = get_predictions(learn, test_imagelist)
+    return x, class_preds, max_probs

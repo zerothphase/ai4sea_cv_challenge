@@ -2,7 +2,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import time
-from helper import get_car_paths, get_cars_df
+from helper import get_car_paths
+from helper import get_cars_df
+from helper import get_predictions
+from helper import get_predictions_from_folder
 from efficientnet_pytorch import EfficientNet
 import argparse
 import torch
@@ -13,33 +16,6 @@ from fastai.vision import DatasetType
 from fastai.vision import defaults
 from test import get_exported_learner, default_checkpoint
 
-def get_predictions_from_folder(learn:Learner, 
-                                test_path:Path) -> (np.ndarray, np.ndarray):
-    """Infer on images in a folder and return predicted class and paths to the
-    images.
-
-    Parameters:
-    -----------
-    learn: 
-        Inference Learner object
-    test_path: 
-        Path to the folder where test images are located.
-    
-    Returns:
-    --------
-    class_preds:
-        Predicted class (not index)
-    x:
-        Paths of the input images
-    """
-    test_imagelist = ImageList.from_folder(test_path)
-    learn.data.add_test(test_imagelist)
-    logits, _ = learn.get_preds(ds_type=DatasetType.Test)
-    probs = torch.nn.functional.softmax(logits, dim=1)
-    max_probs, y_preds = torch.max(probs, dim=1)
-    class_preds = np.array(learn.data.single_ds.y.classes)[y_preds]
-    x = learn.data.test_ds.x.items
-    return class_preds, x, max_probs.numpy()
 
 def parse_args() -> str:
     """Return user inputs"""
@@ -97,7 +73,7 @@ def main():
     # Evaluate accuracy on test set
     print("Making predictions...")
     start = time.time()
-    class_preds, x, probs = get_predictions_from_folder(inference_learn, 
+    x, class_preds, probs = get_predictions_from_folder(inference_learn, 
                                                               test_path)
     # Export predictions to output.csv
     output_df = pd.DataFrame(np.array([x, class_preds, probs]).transpose(), 
