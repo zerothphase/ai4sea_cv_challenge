@@ -6,7 +6,11 @@ import numpy as np
 import scipy.io
 import pandas as pd
 import os
-from fastai.vision import ImageList, crop_pad, imagenet_stats, Learner, DatasetType
+from fastai.vision import ImageList
+from fastai.vision import crop_pad
+from fastai.vision import imagenet_stats
+from fastai.vision import Learner
+from fastai.vision import DatasetType
 from fastai.vision import load_learner
 from sklearn.model_selection import train_test_split
 from efficientnet_pytorch import EfficientNet
@@ -113,12 +117,6 @@ def get_cars_df(annos_matfile:str) -> pd.DataFrame:
     idx2name_dic = get_idx2name_dic()
     df['class_name'] = df['class'].map(idx2name_dic)
     return df[['fname', 'class_name', 'class']]
-
-def get_train_val_idx(num_examples, val_percent=0.2):
-    num_train = int(num_examples*(1-val_percent))
-    random_idx = np.random.permutation(num_examples)
-    train_idx, val_idx = random_idx[:num_train], random_idx[num_train:]
-    return train_idx, val_idx
 
 def get_car_data(dataset:str="train", tfms=None, bs:int=32, sz=224, 
                  padding_mode:str='reflection', stratify:bool=True, 
