@@ -6,6 +6,7 @@ from helper import get_car_paths
 from helper import get_cars_df
 from helper import get_predictions_from_folder
 from helper import get_exported_learner
+from helper import idx_to_classname
 from efficientnet_pytorch import EfficientNet
 import argparse
 import torch
@@ -72,8 +73,9 @@ def main():
     # Evaluate accuracy on test set
     print("Making predictions...")
     start = time.time()
-    x, class_preds, probs = get_predictions_from_folder(inference_learn, 
+    x, y_preds, probs = get_predictions_from_folder(inference_learn, 
                                                               test_path)
+    class_preds = idx_to_classname(y_preds, inference_learn)
     # Export predictions to output.csv
     output_df = pd.DataFrame(np.array([x, class_preds, probs]).transpose(), 
                              columns=["image_path", "target", "probability"])

@@ -173,12 +173,11 @@ def get_predictions(learn:Learner, imagelist:ImageList):
     logits, _ = learn.get_preds(ds_type=DatasetType.Test)
     probs = torch.nn.functional.softmax(logits, dim=1)
     max_probs, y_preds = torch.max(probs, dim=1)
-    class_preds = np.array(learn.data.single_ds.y.classes)[y_preds]
-    x = learn.data.test_ds.x.items
-    return x, class_preds, max_probs.numpy()
+    x = imagelist.items
+    return x, y_preds.numpy(), max_probs.numpy()
 
 def get_predictions_from_folder(learn:Learner, 
-                                test_path:Path) -> (np.ndarray, np.ndarray):
+                                test_path:Path) -> (list, np.ndarray, np.ndarray):
     """Infer on images in a folder and return predicted class and paths to the
     images.
 
@@ -197,8 +196,8 @@ def get_predictions_from_folder(learn:Learner,
         Paths of the input images
     """
     test_imagelist = ImageList.from_folder(test_path)
-    x, class_preds, max_probs = get_predictions(learn, test_imagelist)
-    return x, class_preds, max_probs
+    x, y_preds, max_probs = get_predictions(learn, test_imagelist)
+    return x, y_preds, max_probs
 
 
 def get_exported_learner(folder_path:Path, filename:str) -> Learner:
@@ -225,3 +224,7 @@ def get_exported_learner(folder_path:Path, filename:str) -> Learner:
     learn = load_learner(folder_path, filename)
     learn.to_fp32()
     return learn
+
+def idx_to_classname(y_preds, learn:Learner):
+    class_preds = np.array(learn.data.single_ds.y.classes)[y_preds]
+    return class_preds
