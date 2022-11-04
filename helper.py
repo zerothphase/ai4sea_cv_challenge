@@ -61,7 +61,26 @@ def untar_tgz(tgz_path: Path, dest_dir:Path) -> Path:
         final_path = dest_dir / tgz_path.stem
     if not final_path.exists():
         with tarfile.open(tgz_path, 'r:gz') as tar:
-            tar.extractall(dest_dir)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar, dest_dir)
     return final_path
 
 def download_and_untar(url:str, dest_dir:Path) -> Path:
